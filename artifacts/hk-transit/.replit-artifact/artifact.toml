@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "HK Transit Dashboard"
+version = "1.0.0"
+id = "artifacts/hk-transit"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25006
+
+[services.development]
+run = "pnpm --filter @workspace/hk-transit run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/hk-transit", "run", "build" ]
+publicDir = "artifacts/hk-transit/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25006"
+BASE_PATH = "/"
