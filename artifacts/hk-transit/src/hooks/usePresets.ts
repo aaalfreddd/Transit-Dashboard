@@ -4,6 +4,7 @@ export interface BusPreset {
   id: string;
   company: "KMB" | "CTB";
   stopId: string;
+  stopName: string;
   route: string;
   direction: string;
   serviceType: string;
@@ -16,9 +17,9 @@ export interface MtrPreset {
 }
 
 const DEFAULT_BUS_ROUTES: BusPreset[] = [
-  { id: "271-E010S0200", company: "KMB", route: "271", stopId: "E010S0200", direction: "outbound", serviceType: "1" },
-  { id: "970-E010E0050", company: "KMB", route: "970", stopId: "E010E0050", direction: "outbound", serviceType: "1" },
-  { id: "11-E010S0100",  company: "KMB", route: "11",  stopId: "E010S0100", direction: "inbound",  serviceType: "1" },
+  { id: "271-E010S0200", company: "KMB", route: "271", stopId: "E010S0200", stopName: "Hong Kong West Kowloon", direction: "outbound", serviceType: "1" },
+  { id: "970-E010E0050", company: "KMB", route: "970", stopId: "E010E0050", stopName: "Kennedy Town", direction: "outbound", serviceType: "1" },
+  { id: "11-E010S0100",  company: "KMB", route: "11",  stopId: "E010S0100", stopName: "Diamond Hill", direction: "inbound",  serviceType: "1" },
 ];
 
 const DEFAULT_MTR_STATIONS: MtrPreset[] = [
@@ -52,6 +53,12 @@ export function usePresets() {
     localStorage.setItem("hk_transit_bus_presets", JSON.stringify(updated));
   };
 
+  const updateBusPresetName = (id: string, stopName: string) => {
+    const updated = busPresets.map((p) => (p.id === id ? { ...p, stopName } : p));
+    setBusPresets(updated);
+    localStorage.setItem("hk_transit_bus_presets", JSON.stringify(updated));
+  };
+
   const removeBusPreset = (id: string) => {
     const updated = busPresets.filter((p) => p.id !== id);
     setBusPresets(updated);
@@ -77,6 +84,7 @@ export function usePresets() {
     isLoaded,
     addBusPreset,
     removeBusPreset,
+    updateBusPresetName,
     addMtrPreset,
     removeMtrPreset,
   };

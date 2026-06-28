@@ -17,6 +17,7 @@ export default function Dashboard() {
     isLoaded,
     addBusPreset,
     removeBusPreset,
+    updateBusPresetName,
     addMtrPreset,
     removeMtrPreset,
   } = usePresets();
@@ -50,6 +51,7 @@ export default function Dashboard() {
           <BusColumn
             presets={busPresets}
             onRemove={removeBusPreset}
+            onUpdateName={updateBusPresetName}
             onAddClick={() => setSettingsOpen(true)}
           />
         </div>
@@ -75,6 +77,7 @@ export default function Dashboard() {
         mtrPresets={mtrPresets}
         onAddBus={addBusPreset}
         onRemoveBus={removeBusPreset}
+        onUpdateBusName={updateBusPresetName}
         onAddMtr={addMtrPreset}
         onRemoveMtr={removeMtrPreset}
       />
