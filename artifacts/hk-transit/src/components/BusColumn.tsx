@@ -1,4 +1,5 @@
 import { BusCard } from "@/components/BusCard";
+import { BusSearchPanel } from "@/components/BusSearchPanel";
 import { BusPreset } from "@/hooks/usePresets";
 import { Bus, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ export function BusColumn({ presets, onRemove, onAddClick }: BusColumnProps) {
 
   return (
     <div className="flex flex-col h-full min-h-0">
+      {/* Column header */}
       <div
         className="flex items-center justify-between px-4 py-3 border-b shrink-0"
         style={{ borderColor: "hsl(var(--border))" }}
@@ -39,22 +41,31 @@ export function BusColumn({ presets, onRemove, onAddClick }: BusColumnProps) {
         </Button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0">
-        {presets.length === 0 ? (
-          <div
-            className="flex flex-col items-center justify-center h-40 text-center rounded-lg border border-dashed"
-            style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--muted-foreground))" }}
-            data-testid="text-bus-empty"
-          >
-            <Bus className="h-8 w-8 mb-2 opacity-30" />
-            <p style={{ fontSize: "var(--base-font-size)" }}>{t.noBusRoutes}</p>
-            <p style={{ fontSize: "calc(var(--base-font-size) * 0.85)" }} className="mt-1">{t.noBusRoutesHint}</p>
+      {/* Scrollable presets */}
+      <div className="overflow-y-auto p-4 space-y-3" style={{ maxHeight: presets.length === 0 ? 0 : undefined }}>
+        {presets.length === 0 ? null : presets.map((preset) => (
+          <BusCard key={preset.id} preset={preset} onRemove={onRemove} />
+        ))}
+      </div>
+
+      {/* Empty state for presets */}
+      {presets.length === 0 && (
+        <div
+          className="flex items-center gap-3 mx-4 mt-4 px-4 py-3 rounded-lg border border-dashed"
+          style={{ borderColor: "hsl(var(--border))", color: "hsl(var(--muted-foreground))" }}
+          data-testid="text-bus-empty"
+        >
+          <Bus className="h-5 w-5 opacity-40 shrink-0" />
+          <div>
+            <p style={{ fontSize: "calc(var(--base-font-size) * 0.9)" }}>{t.noBusRoutes}</p>
+            <p style={{ fontSize: "calc(var(--base-font-size) * 0.8)" }} className="mt-0.5">{t.noBusRoutesHint}</p>
           </div>
-        ) : (
-          presets.map((preset) => (
-            <BusCard key={preset.id} preset={preset} onRemove={onRemove} />
-          ))
-        )}
+        </div>
+      )}
+
+      {/* Search panel — always visible at bottom, fills remaining space */}
+      <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+        <BusSearchPanel />
       </div>
     </div>
   );

@@ -313,8 +313,11 @@ export function SettingsDrawer({
                   <SelectContent>
                     {MTR_LINES.map((l) => (
                       <SelectItem key={l.code} value={l.code}>
-                        <span className="font-mono font-bold mr-2">{l.code}</span>
-                        {language === "zh" ? l.name_zh : l.name_en}
+                        {language === "zh" ? (
+                          <><span className="mr-1">{l.name_zh}</span><span className="font-mono opacity-60">{l.code}</span></>
+                        ) : (
+                          <><span className="font-mono font-bold mr-2">{l.code}</span>{l.name_en}</>
+                        )}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -331,8 +334,11 @@ export function SettingsDrawer({
                   <SelectContent>
                     {(selectedMtrLine?.stations || []).map((s) => (
                       <SelectItem key={s.code} value={s.code}>
-                        <span className="font-mono font-bold mr-2">{s.code}</span>
-                        {language === "zh" ? s.name_zh : s.name_en}
+                        {language === "zh" ? (
+                          <><span className="mr-1">{s.name_zh}</span><span className="font-mono opacity-60">{s.code}</span></>
+                        ) : (
+                          <><span className="font-mono font-bold mr-2">{s.code}</span>{s.name_en}</>
+                        )}
                       </SelectItem>
                     ))}
                   </SelectContent>
