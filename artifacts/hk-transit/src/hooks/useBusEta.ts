@@ -1,53 +1,107 @@
-import { useQuery } from '@tanstack/react-query';
+import { useQuery } from "@tanstack/react-query";
 
 export interface BusEta {
   eta: string | null;
   rmk_en: string;
+  rmk_tc: string;
   dest_en: string;
+  dest_tc: string;
   eta_seq: number;
 }
 
 export interface RouteInfo {
   orig_en: string;
+  orig_tc: string;
   dest_en: string;
+  dest_tc: string;
 }
 
-const fetchBusEta = async (stopId: string, route: string, serviceType: string): Promise<BusEta[]> => {
-  const res = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/eta/${stopId}/${route}/${serviceType}`);
-  if (!res.ok) throw new Error('Failed to fetch bus ETA');
+async function fetchKmbEta(stopId: string, route: string, serviceType: string): Promise<BusEta[]> {
+  const res = await fetch(
+    `https://data.etabus.gov.hk/v1/transport/kmb/eta/${stopId}/${route}/${serviceType}`
+  );
+  if (!res.ok) throw new Error("Failed to fetch KMB ETA");
   const json = await res.json();
   return json.data || [];
-};
+}
 
-const fetchRouteInfo = async (route: string, direction: string, serviceType: string): Promise<RouteInfo> => {
-  const res = await fetch(`https://data.etabus.gov.hk/v1/transport/kmb/route/${route}/${direction}/${serviceType}`);
-  if (!res.ok) throw new Error('Failed to fetch route info');
+async function fetchCtbEta(stopId: string, route: string): Promise<BusEta[]> {
+  const res = await fetch(
+    `https://rt.data.gov.hk/v1.1/transport/citybus/eta/CITYBUS/${stopId}/${route}`
+  );
+  if (!res.ok) throw new Error("Failed to fetch CTB ETA");
+  const json = await res.json();
+  return (json.data || []).map((d: {
+    eta?: string | null;
+    rmk_en?: string;
+    rmk_tc?: string;
+    dest_en?: string;
+    dest_tc?: string;
+    eta_seq?: number;
+  }) => ({
+    eta: d.eta ?? null,
+    rmk_en: d.rmk_en || "",
+    rmk_tc: d.rmk_tc || "",
+    dest_en: d.dest_en || "",
+    dest_tc: d.dest_tc || "",
+    eta_seq: d.eta_seq ?? 0,
+  }));
+}
+
+async function fetchKmbRouteInfo(route: string, direction: string, serviceType: string): Promise<RouteInfo> {
+  const res = await fetch(
+    `https://data.etabus.gov.hk/v1/transport/kmb/route/${route}/${direction}/${serviceType}`
+  );
+  if (!res.ok) throw new Error("Failed to fetch route info");
   const json = await res.json();
   return {
-    orig_en: json.data?.orig_en || '',
-    dest_en: json.data?.dest_en || ''
+    orig_en: json.data?.orig_en || "",
+    orig_tc: json.data?.orig_tc || "",
+    dest_en: json.data?.dest_en || "",
+    dest_tc: json.data?.dest_tc || "",
   };
-};
+}
 
-export function useBusEta(stopId: string, route: string, direction: string, serviceType: string) {
+async function fetchCtbRouteInfo(route: string, direction: string): Promise<RouteInfo> {
+  const res = await fetch(
+    `https://rt.data.gov.hk/v1.1/transport/citybus/route/CITYBUS/${route}`
+  );
+  if (!res.ok) throw new Error("Failed to fetch CTB route info");
+  const json = await res.json();
+  const d = json.data || {};
+  if (direction === "outbound") {
+    return { orig_en: d.orig_en || "", orig_tc: d.orig_tc || "", dest_en: d.dest_en || "", dest_tc: d.dest_tc || "" };
+  }
+  return { orig_en: d.dest_en || "", orig_tc: d.dest_tc || "", dest_en: d.orig_en || "", dest_tc: d.orig_tc || "" };
+}
+
+export function useBusEta(
+  company: "KMB" | "CTB",
+  stopId: string,
+  route: string,
+  direction: string,
+  serviceType: string
+) {
   return useQuery({
-    queryKey: ['bus_eta', stopId, route, direction, serviceType],
+    queryKey: ["bus_eta", company, stopId, route, direction, serviceType],
     queryFn: async () => {
       const [etas, routeInfo] = await Promise.all([
-        fetchBusEta(stopId, route, serviceType),
-        fetchRouteInfo(route, direction, serviceType).catch(() => ({ orig_en: '', dest_en: '' }))
+        company === "KMB"
+          ? fetchKmbEta(stopId, route, serviceType)
+          : fetchCtbEta(stopId, route),
+        company === "KMB"
+          ? fetchKmbRouteInfo(route, direction, serviceType).catch(() => ({ orig_en: "", orig_tc: "", dest_en: "", dest_tc: "" }))
+          : fetchCtbRouteInfo(route, direction).catch(() => ({ orig_en: "", orig_tc: "", dest_en: "", dest_tc: "" })),
       ]);
-      
-      const filteredEtas = etas.filter(eta => eta.eta_seq && eta.eta_seq <= 3);
-      filteredEtas.sort((a, b) => a.eta_seq - b.eta_seq);
-      
-      return {
-        etas: filteredEtas,
-        routeInfo
-      };
+
+      const filteredEtas = etas
+        .filter((e) => e.eta_seq > 0 && e.eta_seq <= 3)
+        .sort((a, b) => a.eta_seq - b.eta_seq);
+
+      return { etas: filteredEtas, routeInfo };
     },
     refetchInterval: 30000,
     staleTime: 25000,
-    enabled: !!stopId && !!route
+    enabled: !!stopId && !!route,
   });
 }

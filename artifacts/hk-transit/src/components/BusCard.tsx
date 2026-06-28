@@ -1,37 +1,25 @@
 import { useBusEta } from "@/hooks/useBusEta";
 import { BusPreset } from "@/hooks/usePresets";
 import { Skeleton } from "@/components/ui/skeleton";
-import { X, Bus, RefreshCw } from "lucide-react";
+import { X, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useApp } from "@/contexts/AppContext";
 
 function minutesUntil(etaStr: string | null): number | null {
   if (!etaStr) return null;
-  const etaTime = new Date(etaStr);
-  const diff = (etaTime.getTime() - Date.now()) / 1000 / 60;
+  const diff = (new Date(etaStr).getTime() - Date.now()) / 60000;
   return diff;
-}
-
-function formatEtaLabel(minutes: number | null): string {
-  if (minutes === null) return "-";
-  if (minutes < 0) return "Departed";
-  if (minutes < 1) return "Due";
-  return `${Math.floor(minutes)} min`;
 }
 
 function formatAbsTime(etaStr: string | null): string {
   if (!etaStr) return "";
-  const d = new Date(etaStr);
-  return d.toLocaleTimeString("en-HK", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-    timeZone: "Asia/Hong_Kong",
+  return new Date(etaStr).toLocaleTimeString("en-HK", {
+    hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "Asia/Hong_Kong",
   });
 }
 
 function etaColor(minutes: number | null): string {
-  if (minutes === null) return "hsl(var(--muted-foreground))";
-  if (minutes < 0) return "hsl(var(--muted-foreground))";
+  if (minutes === null || minutes < 0) return "hsl(var(--muted-foreground))";
   if (minutes < 2) return "hsl(0 84% 60%)";
   if (minutes < 5) return "hsl(38 92% 50%)";
   return "hsl(var(--foreground))";
@@ -43,12 +31,28 @@ interface BusCardProps {
 }
 
 export function BusCard({ preset, onRemove }: BusCardProps) {
+  const { t, language } = useApp();
   const { data, isLoading, isError, refetch } = useBusEta(
+    preset.company ?? "KMB",
     preset.stopId,
     preset.route,
     preset.direction,
     preset.serviceType
   );
+
+  function etaLabel(minutes: number | null): string {
+    if (minutes === null) return "-";
+    if (minutes < 0) return t.departed;
+    if (minutes < 1) return t.due;
+    return `${Math.floor(minutes)} min`;
+  }
+
+  const dest = language === "zh"
+    ? (data?.routeInfo.dest_tc || data?.routeInfo.dest_en)
+    : data?.routeInfo.dest_en;
+  const fallbackDest = language === "zh"
+    ? (preset.direction === "outbound" ? "去程" : "回程")
+    : (preset.direction === "outbound" ? t.outbound : t.inbound);
 
   if (isLoading) {
     return (
@@ -58,13 +62,11 @@ export function BusCard({ preset, onRemove }: BusCardProps) {
         data-testid={`card-bus-loading-${preset.id}`}
       >
         <div className="flex justify-between items-start mb-3">
-          <Skeleton className="h-8 w-16" />
-          <Skeleton className="h-5 w-24" />
+          <Skeleton className="h-10 w-16" />
+          <Skeleton className="h-5 w-36" />
         </div>
         <div className="space-y-2">
-          {[1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-6 w-full" />
-          ))}
+          {[1, 2, 3].map((i) => <Skeleton key={i} className="h-6 w-full" />)}
         </div>
       </div>
     );
@@ -82,44 +84,48 @@ export function BusCard({ preset, onRemove }: BusCardProps) {
       >
         <div className="flex items-center gap-3">
           <div
-            className="flex items-center justify-center h-10 w-10 rounded font-bold text-xl font-mono"
-            style={{ background: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
+            className="flex items-center justify-center h-10 w-10 rounded font-bold font-mono"
+            style={{
+              background: "hsl(var(--primary))",
+              color: "hsl(var(--primary-foreground))",
+              fontSize: "calc(var(--base-font-size) * 1.3)",
+            }}
             data-testid={`text-bus-route-${preset.id}`}
           >
             {preset.route}
           </div>
           <div>
             <div
-              className="text-sm font-semibold"
-              style={{ color: "hsl(var(--foreground))" }}
+              className="font-semibold"
+              style={{ color: "hsl(var(--foreground))", fontSize: "var(--base-font-size)" }}
               data-testid={`text-bus-dest-${preset.id}`}
             >
-              {data?.routeInfo.dest_en || (preset.direction === "outbound" ? "Outbound" : "Inbound")}
+              {dest || fallbackDest}
             </div>
-            <div className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
-              Stop: {preset.stopId}
+            <div
+              className="flex items-center gap-1.5 mt-0.5"
+              style={{ color: "hsl(var(--muted-foreground))", fontSize: "calc(var(--base-font-size) * 0.8)" }}
+            >
+              <span
+                className="px-1 py-0.5 rounded font-mono"
+                style={{ background: "hsl(var(--secondary))" }}
+              >
+                {preset.company ?? "KMB"}
+              </span>
+              <span>{preset.stopId}</span>
             </div>
           </div>
         </div>
         <div className="flex items-center gap-1">
           {isError && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-7 w-7 opacity-60 hover:opacity-100"
-              onClick={() => refetch()}
-              data-testid={`button-bus-refresh-${preset.id}`}
-            >
+            <Button variant="ghost" size="icon" className="h-7 w-7 opacity-60 hover:opacity-100"
+              onClick={() => refetch()} data-testid={`button-bus-refresh-${preset.id}`}>
               <RefreshCw className="h-3.5 w-3.5" />
             </Button>
           )}
-          <Button
-            variant="ghost"
-            size="icon"
+          <Button variant="ghost" size="icon"
             className="h-7 w-7 opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity"
-            onClick={() => onRemove(preset.id)}
-            data-testid={`button-bus-remove-${preset.id}`}
-          >
+            onClick={() => onRemove(preset.id)} data-testid={`button-bus-remove-${preset.id}`}>
             <X className="h-3.5 w-3.5" />
           </Button>
         </div>
@@ -128,66 +134,63 @@ export function BusCard({ preset, onRemove }: BusCardProps) {
       <div className="px-4 py-3">
         {isError ? (
           <div
-            className="text-sm text-center py-2"
-            style={{ color: "hsl(var(--muted-foreground))" }}
+            className="text-center py-2"
+            style={{ color: "hsl(var(--muted-foreground))", fontSize: "calc(var(--base-font-size) * 0.9)" }}
             data-testid={`text-bus-error-${preset.id}`}
           >
-            API unavailable — retrying
+            {t.apiUnavailable}
           </div>
-        ) : !data?.etas || data.etas.length === 0 ? (
+        ) : !data?.etas?.length ? (
           <div
-            className="text-sm text-center py-2"
-            style={{ color: "hsl(var(--muted-foreground))" }}
+            className="text-center py-2"
+            style={{ color: "hsl(var(--muted-foreground))", fontSize: "calc(var(--base-font-size) * 0.9)" }}
             data-testid={`text-bus-noservice-${preset.id}`}
           >
-            No service
+            {t.noService}
           </div>
         ) : (
           <div className="space-y-2">
             {data.etas.map((eta, i) => {
               const mins = minutesUntil(eta.eta);
+              const etaDest = language === "zh" ? (eta.dest_tc || eta.dest_en) : eta.dest_en;
+              const rmk = language === "zh" ? (eta.rmk_tc || eta.rmk_en) : eta.rmk_en;
               return (
-                <div
-                  key={i}
-                  className="flex items-center justify-between"
-                  data-testid={`text-bus-eta-${preset.id}-${i}`}
-                >
-                  <div className="flex items-center gap-2">
+                <div key={i} className="flex items-center justify-between"
+                  data-testid={`text-bus-eta-${preset.id}-${i}`}>
+                  <div className="flex items-center gap-2 min-w-0">
                     <div
-                      className="text-xs w-5 h-5 flex items-center justify-center rounded-full font-mono"
+                      className="w-5 h-5 flex items-center justify-center rounded-full font-mono shrink-0"
                       style={{
                         background: i === 0 ? "hsl(var(--primary) / 0.2)" : "hsl(var(--secondary))",
                         color: i === 0 ? "hsl(var(--primary))" : "hsl(var(--muted-foreground))",
+                        fontSize: "calc(var(--base-font-size) * 0.75)",
                       }}
                     >
                       {i + 1}
                     </div>
-                    {eta.dest_en && (
-                      <span className="text-xs" style={{ color: "hsl(var(--muted-foreground))" }}>
-                        {eta.dest_en}
+                    {etaDest && (
+                      <span className="truncate" style={{ color: "hsl(var(--muted-foreground))", fontSize: "calc(var(--base-font-size) * 0.8)" }}>
+                        {etaDest}
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-3">
-                    {eta.rmk_en && eta.rmk_en !== "-" && (
+                  <div className="flex items-center gap-3 shrink-0">
+                    {rmk && rmk !== "-" && (
                       <span
-                        className="text-xs px-1.5 py-0.5 rounded"
-                        style={{ background: "hsl(var(--secondary))", color: "hsl(var(--muted-foreground))" }}
+                        className="px-1.5 py-0.5 rounded"
+                        style={{ background: "hsl(var(--secondary))", color: "hsl(var(--muted-foreground))", fontSize: "calc(var(--base-font-size) * 0.75)" }}
                       >
-                        {eta.rmk_en}
+                        {rmk}
                       </span>
                     )}
-                    <span
-                      className="text-xs font-mono"
-                      style={{ color: "hsl(var(--muted-foreground))" }}
-                    >
+                    <span className="font-mono" style={{ color: "hsl(var(--muted-foreground))", fontSize: "calc(var(--base-font-size) * 0.8)" }}>
                       {formatAbsTime(eta.eta)}
                     </span>
                     <span
-                      className="font-bold font-mono text-sm min-w-[52px] text-right"
-                      style={{ color: etaColor(mins) }}
+                      className="font-bold font-mono min-w-[52px] text-right"
+                      style={{ color: etaColor(mins), fontSize: "var(--base-font-size)" }}
                     >
-                      {formatEtaLabel(mins)}
+                      {etaLabel(mins)}
                     </span>
                   </div>
                 </div>

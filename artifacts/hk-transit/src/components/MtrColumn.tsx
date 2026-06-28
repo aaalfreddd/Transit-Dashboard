@@ -2,6 +2,7 @@ import { MtrCard } from "@/components/MtrCard";
 import { MtrPreset } from "@/hooks/usePresets";
 import { Train, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useApp } from "@/contexts/AppContext";
 
 interface MtrColumnProps {
   presets: MtrPreset[];
@@ -10,6 +11,8 @@ interface MtrColumnProps {
 }
 
 export function MtrColumn({ presets, onRemove, onAddClick }: MtrColumnProps) {
+  const { t } = useApp();
+
   return (
     <div className="flex flex-col h-full min-h-0">
       <div
@@ -17,26 +20,22 @@ export function MtrColumn({ presets, onRemove, onAddClick }: MtrColumnProps) {
         style={{ borderColor: "hsl(var(--border))" }}
       >
         <div className="flex items-center gap-2">
-          <Train className="h-4 w-4" style={{ color: "hsl(var(--accent))" }} />
-          <span className="text-sm font-semibold tracking-wide" style={{ color: "hsl(var(--foreground))" }}>
-            MTR
+          <Train className="h-4 w-4 shrink-0" style={{ color: "hsl(var(--accent))" }} />
+          <span className="font-semibold tracking-wide" style={{ color: "hsl(var(--foreground))", fontSize: "var(--base-font-size)" }}>
+            {t.mtr}
           </span>
           <span
-            className="text-xs px-1.5 py-0.5 rounded font-mono"
-            style={{ background: "hsl(var(--secondary))", color: "hsl(var(--muted-foreground))" }}
+            className="px-1.5 py-0.5 rounded font-mono"
+            style={{ background: "hsl(var(--secondary))", color: "hsl(var(--muted-foreground))", fontSize: "calc(var(--base-font-size) * 0.75)" }}
           >
-            Schedule
+            {t.schedule}
           </span>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-7 gap-1.5 text-xs"
-          onClick={onAddClick}
-          data-testid="button-add-mtr"
-        >
+        <Button variant="ghost" size="sm" className="h-7 gap-1.5"
+          style={{ fontSize: "calc(var(--base-font-size) * 0.85)" }}
+          onClick={onAddClick} data-testid="button-add-mtr">
           <Plus className="h-3.5 w-3.5" />
-          Add Station
+          {t.addStation}
         </Button>
       </div>
 
@@ -48,8 +47,8 @@ export function MtrColumn({ presets, onRemove, onAddClick }: MtrColumnProps) {
             data-testid="text-mtr-empty"
           >
             <Train className="h-8 w-8 mb-2 opacity-30" />
-            <p className="text-sm">No MTR stations added</p>
-            <p className="text-xs mt-1">Click "Add Station" to get started</p>
+            <p style={{ fontSize: "var(--base-font-size)" }}>{t.noMtrStations}</p>
+            <p style={{ fontSize: "calc(var(--base-font-size) * 0.85)" }} className="mt-1">{t.noMtrStationsHint}</p>
           </div>
         ) : (
           presets.map((preset) => (

@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 export interface BusPreset {
   id: string;
+  company: "KMB" | "CTB";
   stopId: string;
   route: string;
   direction: string;
@@ -15,15 +16,15 @@ export interface MtrPreset {
 }
 
 const DEFAULT_BUS_ROUTES: BusPreset[] = [
-  { id: '271-E010S0200', route: '271', stopId: 'E010S0200', direction: 'outbound', serviceType: '1' },
-  { id: '970-E010E0050', route: '970', stopId: 'E010E0050', direction: 'outbound', serviceType: '1' },
-  { id: '11-E010S0100', route: '11', stopId: 'E010S0100', direction: 'inbound', serviceType: '1' }
+  { id: "271-E010S0200", company: "KMB", route: "271", stopId: "E010S0200", direction: "outbound", serviceType: "1" },
+  { id: "970-E010E0050", company: "KMB", route: "970", stopId: "E010E0050", direction: "outbound", serviceType: "1" },
+  { id: "11-E010S0100",  company: "KMB", route: "11",  stopId: "E010S0100", direction: "inbound",  serviceType: "1" },
 ];
 
 const DEFAULT_MTR_STATIONS: MtrPreset[] = [
-  { id: 'TML-TIS', line: 'TML', station: 'TIS' },
-  { id: 'TWL-TSW', line: 'TWL', station: 'TSW' },
-  { id: 'KTL-KOT', line: 'KTL', station: 'KOT' }
+  { id: "TML-TIS", line: "TML", station: "TIS" },
+  { id: "TWL-TSW", line: "TWL", station: "TSW" },
+  { id: "KTL-KOT", line: "KTL", station: "KOT" },
 ];
 
 export function usePresets() {
@@ -33,45 +34,41 @@ export function usePresets() {
 
   useEffect(() => {
     try {
-      const storedBus = localStorage.getItem('hk_transit_bus_presets');
-      const storedMtr = localStorage.getItem('hk_transit_mtr_presets');
-
-      if (storedBus) setBusPresets(JSON.parse(storedBus));
-      else setBusPresets(DEFAULT_BUS_ROUTES);
-
-      if (storedMtr) setMtrPresets(JSON.parse(storedMtr));
-      else setMtrPresets(DEFAULT_MTR_STATIONS);
-    } catch (e) {
+      const storedBus = localStorage.getItem("hk_transit_bus_presets");
+      const storedMtr = localStorage.getItem("hk_transit_mtr_presets");
+      setBusPresets(storedBus ? JSON.parse(storedBus) : DEFAULT_BUS_ROUTES);
+      setMtrPresets(storedMtr ? JSON.parse(storedMtr) : DEFAULT_MTR_STATIONS);
+    } catch {
       setBusPresets(DEFAULT_BUS_ROUTES);
       setMtrPresets(DEFAULT_MTR_STATIONS);
     }
     setIsLoaded(true);
   }, []);
 
-  const addBusPreset = (preset: Omit<BusPreset, 'id'>) => {
-    const newPreset = { ...preset, id: `${preset.route}-${preset.stopId}-${Date.now()}` };
+  const addBusPreset = (preset: Omit<BusPreset, "id">) => {
+    const newPreset: BusPreset = { ...preset, id: `${preset.route}-${preset.stopId}-${Date.now()}` };
     const updated = [...busPresets, newPreset];
     setBusPresets(updated);
-    localStorage.setItem('hk_transit_bus_presets', JSON.stringify(updated));
+    localStorage.setItem("hk_transit_bus_presets", JSON.stringify(updated));
   };
 
   const removeBusPreset = (id: string) => {
-    const updated = busPresets.filter(p => p.id !== id);
+    const updated = busPresets.filter((p) => p.id !== id);
     setBusPresets(updated);
-    localStorage.setItem('hk_transit_bus_presets', JSON.stringify(updated));
+    localStorage.setItem("hk_transit_bus_presets", JSON.stringify(updated));
   };
 
-  const addMtrPreset = (preset: Omit<MtrPreset, 'id'>) => {
-    const newPreset = { ...preset, id: `${preset.line}-${preset.station}-${Date.now()}` };
+  const addMtrPreset = (preset: Omit<MtrPreset, "id">) => {
+    const newPreset: MtrPreset = { ...preset, id: `${preset.line}-${preset.station}-${Date.now()}` };
     const updated = [...mtrPresets, newPreset];
     setMtrPresets(updated);
-    localStorage.setItem('hk_transit_mtr_presets', JSON.stringify(updated));
+    localStorage.setItem("hk_transit_mtr_presets", JSON.stringify(updated));
   };
 
   const removeMtrPreset = (id: string) => {
-    const updated = mtrPresets.filter(p => p.id !== id);
+    const updated = mtrPresets.filter((p) => p.id !== id);
     setMtrPresets(updated);
-    localStorage.setItem('hk_transit_mtr_presets', JSON.stringify(updated));
+    localStorage.setItem("hk_transit_mtr_presets", JSON.stringify(updated));
   };
 
   return {
@@ -81,6 +78,6 @@ export function usePresets() {
     addBusPreset,
     removeBusPreset,
     addMtrPreset,
-    removeMtrPreset
+    removeMtrPreset,
   };
 }
