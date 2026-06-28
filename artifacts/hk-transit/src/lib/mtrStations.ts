@@ -182,3 +182,16 @@ export const MTR_LINES: MtrLine[] = [
 export const MTR_LINE_MAP: Record<string, MtrLine> = Object.fromEntries(
   MTR_LINES.map((l) => [l.code, l])
 );
+
+// Flat lookup: station code → names (deduped across lines, first occurrence wins)
+export const MTR_STATION_MAP: Record<string, { name_en: string; name_zh: string }> = (() => {
+  const map: Record<string, { name_en: string; name_zh: string }> = {};
+  for (const line of MTR_LINES) {
+    for (const sta of line.stations) {
+      if (!map[sta.code]) {
+        map[sta.code] = { name_en: sta.name_en, name_zh: sta.name_zh };
+      }
+    }
+  }
+  return map;
+})();

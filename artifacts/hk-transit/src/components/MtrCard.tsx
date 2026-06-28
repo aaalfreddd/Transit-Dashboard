@@ -4,7 +4,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { X, RefreshCw, ArrowUp, ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useApp } from "@/contexts/AppContext";
-import { MTR_LINE_MAP } from "@/lib/mtrStations";
+import { MTR_LINE_MAP, MTR_STATION_MAP } from "@/lib/mtrStations";
 
 function minutesUntil(timeStr: string): number | null {
   if (!timeStr) return null;
@@ -34,9 +34,19 @@ function minuteColor(mins: number | null): string {
   return "hsl(var(--foreground))";
 }
 
-function TrainRow({ train, index, due, departed }: { train: MtrTrain; index: number; due: string; departed: string }) {
+function TrainRow({
+  train, index, due, departed, language,
+}: {
+  train: MtrTrain; index: number; due: string; departed: string; language: string;
+}) {
   const mins = minutesUntil(train.time);
   const label = mins === null ? "-" : mins < 0 ? departed : mins < 1 ? due : `${Math.floor(mins)} min`;
+
+  // Resolve destination code to full station name
+  const destInfo = MTR_STATION_MAP[train.dest];
+  const destName = destInfo
+    ? (language === "zh" ? destInfo.name_zh : destInfo.name_en)
+    : train.dest;
 
   return (
     <div className="flex items-center justify-between py-1" data-testid={`text-mtr-train-${train.dest}-${index}`}>
@@ -52,7 +62,7 @@ function TrainRow({ train, index, due, departed }: { train: MtrTrain; index: num
           {index + 1}
         </span>
         <span className="truncate" style={{ color: "hsl(var(--muted-foreground))", fontSize: "calc(var(--base-font-size) * 0.8)" }}>
-          {train.dest}
+          {destName}
         </span>
         {train.plat && (
           <span
@@ -168,7 +178,7 @@ export function MtrCard({ preset, onRemove }: MtrCardProps) {
               {upTrains.length === 0
                 ? <div style={{ color: "hsl(var(--muted-foreground))", fontSize: "calc(var(--base-font-size) * 0.85)" }}>{t.noService}</div>
                 : <div className="space-y-0.5">{upTrains.map((train, i) => (
-                    <TrainRow key={i} train={train} index={i} due={t.due} departed={t.departed} />
+                    <TrainRow key={i} train={train} index={i} due={t.due} departed={t.departed} language={language} />
                   ))}</div>
               }
             </div>
@@ -181,7 +191,7 @@ export function MtrCard({ preset, onRemove }: MtrCardProps) {
               {downTrains.length === 0
                 ? <div style={{ color: "hsl(var(--muted-foreground))", fontSize: "calc(var(--base-font-size) * 0.85)" }}>{t.noService}</div>
                 : <div className="space-y-0.5">{downTrains.map((train, i) => (
-                    <TrainRow key={i} train={train} index={i} due={t.due} departed={t.departed} />
+                    <TrainRow key={i} train={train} index={i} due={t.due} departed={t.departed} language={language} />
                   ))}</div>
               }
             </div>

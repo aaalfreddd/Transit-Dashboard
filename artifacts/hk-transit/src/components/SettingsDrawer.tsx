@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
 } from "@/components/ui/sheet";
@@ -7,10 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
 import { BusPreset, MtrPreset } from "@/hooks/usePresets";
 import { MTR_LINES } from "@/lib/mtrStations";
-import { useBusStops } from "@/hooks/useBusStops";
+import { useBusStopRefs, fetchStopName, BusStopName } from "@/hooks/useBusStops";
 import { useApp } from "@/contexts/AppContext";
 import { X, Plus, Bus, Train, Loader2 } from "lucide-react";
 
@@ -23,14 +22,42 @@ function BusStopSelect({
   value: string; onChange: (stopId: string) => void; language: string;
 }) {
   const canFetch = !!route.trim() && !!direction;
-  const { data: stops, isLoading, isError } = useBusStops(company, route, direction, serviceType);
+  const { data: stopRefs, isLoading, isError } = useBusStopRefs(company, route, direction, serviceType);
+  const [names, setNames] = useState<Record<string, BusStopName>>({});
+  const [loadingNames, setLoadingNames] = useState(false);
+
+  // Progressive name loading in batches of 6
+  useEffect(() => {
+    if (!stopRefs?.length) { setNames({}); return; }
+    setNames({});
+    setLoadingNames(true);
+    let cancelled = false;
+
+    (async () => {
+      const batches: typeof stopRefs[] = [];
+      for (let i = 0; i < stopRefs.length; i += 6) batches.push(stopRefs.slice(i, i + 6));
+
+      let current: Record<string, BusStopName> = {};
+      for (const batch of batches) {
+        if (cancelled) return;
+        const entries = await Promise.all(
+          batch.map(async (s) => [s.id, await fetchStopName(s.id, company)] as [string, BusStopName])
+        );
+        current = { ...current, ...Object.fromEntries(entries) };
+        if (!cancelled) setNames({ ...current });
+      }
+      if (!cancelled) setLoadingNames(false);
+    })();
+
+    return () => { cancelled = true; };
+  }, [stopRefs, company]);
+
+  const fsSmall = "calc(var(--base-font-size) * 0.85)";
 
   if (!canFetch) {
     return (
-      <div
-        className="w-full h-8 rounded border px-3 flex items-center"
-        style={{ borderColor: "hsl(var(--border))", background: "hsl(var(--secondary))", color: "hsl(var(--muted-foreground))", fontSize: "calc(var(--base-font-size) * 0.85)" }}
-      >
+      <div className="w-full h-8 rounded border px-3 flex items-center"
+        style={{ borderColor: "hsl(var(--border))", background: "hsl(var(--secondary))", color: "hsl(var(--muted-foreground))", fontSize: fsSmall }}>
         Enter route &amp; direction first
       </div>
     );
@@ -38,41 +65,63 @@ function BusStopSelect({
 
   if (isLoading) {
     return (
-      <div
-        className="w-full h-8 rounded border px-3 flex items-center gap-2"
-        style={{ borderColor: "hsl(var(--border))", background: "hsl(var(--secondary))", color: "hsl(var(--muted-foreground))", fontSize: "calc(var(--base-font-size) * 0.85)" }}
-      >
+      <div className="w-full h-8 rounded border px-3 flex items-center gap-2"
+        style={{ borderColor: "hsl(var(--border))", background: "hsl(var(--secondary))", color: "hsl(var(--muted-foreground))", fontSize: fsSmall }}>
         <Loader2 className="h-3.5 w-3.5 animate-spin" />
-        Loading stops...
+        Loading stops…
       </div>
     );
   }
 
-  if (isError || !stops?.length) {
+  if (isError || !stopRefs?.length) {
     return (
-      <div
-        className="w-full h-8 rounded border px-3 flex items-center"
-        style={{ borderColor: "hsl(var(--border))", background: "hsl(var(--secondary))", color: "hsl(0 84% 60%)", fontSize: "calc(var(--base-font-size) * 0.85)" }}
-      >
+      <div className="w-full h-8 rounded border px-3 flex items-center"
+        style={{ borderColor: "hsl(var(--border))", background: "hsl(var(--secondary))", color: "hsl(0 84% 60%)", fontSize: fsSmall }}>
         No stops found for this route
       </div>
     );
   }
 
+  const loaded = Object.keys(names).length;
+  const total = stopRefs.length;
+  const pct = total > 0 ? Math.round(loaded / total * 100) : 0;
+
   return (
-    <Select value={value} onValueChange={onChange}>
-      <SelectTrigger className="h-8" style={{ fontSize: "calc(var(--base-font-size) * 0.85)" }} data-testid="select-bus-stop">
-        <SelectValue placeholder="Select stop" />
-      </SelectTrigger>
-      <SelectContent>
-        {stops.map((stop) => (
-          <SelectItem key={stop.id} value={stop.id}>
-            <span className="font-medium">{language === "zh" ? stop.name_tc : stop.name_en}</span>
-            <span className="ml-2 font-mono opacity-60" style={{ fontSize: "0.75em" }}>{stop.id}</span>
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <div className="space-y-1">
+      {/* Progress bar while names are loading */}
+      {loadingNames && (
+        <div className="h-1 rounded-full overflow-hidden" style={{ background: "hsl(var(--border))" }}>
+          <div className="h-full rounded-full transition-all duration-300"
+            style={{ width: `${pct}%`, background: "hsl(var(--primary))" }} />
+        </div>
+      )}
+      <Select value={value} onValueChange={onChange}>
+        <SelectTrigger className="h-8" style={{ fontSize: fsSmall }} data-testid="select-bus-stop">
+          <SelectValue placeholder={loadingNames ? `Loading names… (${pct}%)` : "Select stop"} />
+        </SelectTrigger>
+        <SelectContent className="max-h-72 overflow-y-auto">
+          {stopRefs.map((stop) => {
+            const nameInfo = names[stop.id];
+            const displayName = nameInfo
+              ? (language === "zh" ? nameInfo.name_tc : nameInfo.name_en)
+              : null;
+            return (
+              <SelectItem
+                key={stop.id}
+                value={stop.id}
+                disabled={!displayName}
+              >
+                <span className="font-mono text-xs opacity-50 mr-1.5">{stop.seq}.</span>
+                {displayName
+                  ? <span className="font-medium">{displayName}</span>
+                  : <span className="opacity-40 italic" style={{ fontSize: "0.85em" }}>Loading…</span>
+                }
+              </SelectItem>
+            );
+          })}
+        </SelectContent>
+      </Select>
+    </div>
   );
 }
 
