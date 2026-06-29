@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { Language, translations, Translations } from "@/lib/translations";
+import { applyThemeColor, resetTheme, getDefaultBg } from "@/lib/theme";
 
 interface AppContextValue {
   language: Language;
@@ -8,12 +9,15 @@ interface AppContextValue {
   fontSize: number;
   increaseFontSize: () => void;
   decreaseFontSize: () => void;
+  bgColor: string;
+  setBgColor: (c: string) => void;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
 
 const FONT_STEPS = [12, 13, 14, 15, 16, 17, 18, 20];
 const DEFAULT_FONT_STEP = 2;
+const DEFAULT_BG = getDefaultBg();
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguageState] = useState<Language>(() => {
@@ -25,11 +29,23 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     return stored ? parseInt(stored, 10) : DEFAULT_FONT_STEP;
   });
 
+  const [bgColor, setBgColorState] = useState<string>(() => {
+    return localStorage.getItem("hk_transit_bg_color") || DEFAULT_BG;
+  });
+
   const fontSize = FONT_STEPS[fontStep] ?? 14;
 
   useEffect(() => {
     document.documentElement.style.setProperty("--base-font-size", `${fontSize}px`);
   }, [fontSize]);
+
+  useEffect(() => {
+    if (bgColor && bgColor !== DEFAULT_BG) {
+      applyThemeColor(bgColor);
+    } else {
+      resetTheme();
+    }
+  }, [bgColor]);
 
   const setLanguage = (l: Language) => {
     setLanguageState(l);
@@ -52,6 +68,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   };
 
+  const setBgColor = useCallback((c: string) => {
+    setBgColorState(c);
+    localStorage.setItem("hk_transit_bg_color", c);
+  }, []);
+
   return (
     <AppContext.Provider
       value={{
@@ -61,6 +82,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         fontSize,
         increaseFontSize,
         decreaseFontSize,
+        bgColor,
+        setBgColor,
       }}
     >
       {children}

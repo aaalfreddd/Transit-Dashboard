@@ -4,12 +4,14 @@ import { BusColumn } from "@/components/BusColumn";
 import { MtrColumn } from "@/components/MtrColumn";
 import { SettingsDrawer } from "@/components/SettingsDrawer";
 import { usePresets } from "@/hooks/usePresets";
+import { useApp } from "@/contexts/AppContext";
 
 type SettingsPanel = "none" | "bus" | "mtr" | "settings";
 
 export default function Dashboard() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [activePanel, setActivePanel] = useState<SettingsPanel>("none");
+  const { bgColor } = useApp();
 
   const {
     busPresets,
@@ -41,7 +43,7 @@ export default function Dashboard() {
   return (
     <div
       className="h-screen w-full flex flex-col overflow-hidden"
-      style={{ background: "hsl(var(--background))" }}
+      style={{ background: bgColor || "hsl(var(--background))" }}
       data-testid="dashboard"
     >
       <TopBar onSettingsOpen={() => setSettingsOpen(true)} />

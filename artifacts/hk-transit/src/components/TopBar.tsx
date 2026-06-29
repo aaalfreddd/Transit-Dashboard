@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useWeather } from "@/hooks/useWeather";
-import { Droplets, Settings, AArrowUp, AArrowDown } from "lucide-react";
+import { Droplets, Settings, AArrowUp, AArrowDown, Palette } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useApp } from "@/contexts/AppContext";
@@ -32,7 +32,8 @@ interface TopBarProps {
 export function TopBar({ onSettingsOpen }: TopBarProps) {
   const [now, setNow] = useState(new Date());
   const { data: weather, isLoading: weatherLoading } = useWeather();
-  const { t, language, setLanguage, fontSize, increaseFontSize, decreaseFontSize } = useApp();
+  const { t, language, setLanguage, fontSize, increaseFontSize, decreaseFontSize, bgColor, setBgColor } = useApp();
+  const colorRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const timer = setInterval(() => setNow(new Date()), 1000);
@@ -185,6 +186,32 @@ export function TopBar({ onSettingsOpen }: TopBarProps) {
             中文
           </button>
         </div>
+
+        <div
+          className="h-6 w-px mx-1"
+          style={{ background: "hsl(var(--border))" }}
+        />
+
+        {/* Hidden color input triggered by the palette button */}
+        <input
+          ref={colorRef}
+          type="color"
+          value={bgColor}
+          onChange={(e) => setBgColor(e.target.value)}
+          className="sr-only"
+          aria-label="Background color"
+          data-testid="input-bg-color"
+        />
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={() => colorRef.current?.click()}
+          title="Background color"
+          data-testid="button-bg-color"
+        >
+          <Palette className="h-4 w-4" style={{ color: "hsl(var(--muted-foreground))" }} />
+        </Button>
 
         <div
           className="h-6 w-px mx-1"
