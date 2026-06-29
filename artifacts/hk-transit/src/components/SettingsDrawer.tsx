@@ -19,7 +19,7 @@ function BusStopSelect({
   company, route, direction, serviceType, value, onChange, language,
 }: {
   company: Company; route: string; direction: string; serviceType: string;
-  value: string; onChange: (stopId: string) => void; language: string;
+  value: string; onChange: (stopId: string, stopName: string) => void; language: string;
 }) {
   const canFetch = !!route.trim() && !!direction;
   const { data: stopRefs, isLoading, isError } = useBusStopRefs(company, route, direction, serviceType);
@@ -95,7 +95,16 @@ function BusStopSelect({
             style={{ width: `${pct}%`, background: "hsl(var(--primary))" }} />
         </div>
       )}
-      <Select value={value} onValueChange={onChange}>
+      <Select
+        value={value}
+        onValueChange={(stopId) => {
+          const nameInfo = names[stopId];
+          const stopName = nameInfo
+            ? (language === "zh" ? nameInfo.name_tc : nameInfo.name_en)
+            : "";
+          onChange(stopId, stopName);
+        }}
+      >
         <SelectTrigger className="h-8" style={{ fontSize: fsSmall }} data-testid="select-bus-stop">
           <SelectValue placeholder={loadingNames ? `Loading names… (${pct}%)` : "Select stop"} />
         </SelectTrigger>
@@ -132,6 +141,7 @@ interface SettingsDrawerProps {
   mtrPresets: MtrPreset[];
   onAddBus: (preset: Omit<BusPreset, "id">) => void;
   onRemoveBus: (id: string) => void;
+  onUpdateBusName: (id: string, stopName: string) => void;
   onAddMtr: (preset: Omit<MtrPreset, "id">) => void;
   onRemoveMtr: (id: string) => void;
 }
@@ -139,7 +149,7 @@ interface SettingsDrawerProps {
 export function SettingsDrawer({
   open, onClose,
   busPresets, mtrPresets,
-  onAddBus, onRemoveBus,
+  onAddBus, onRemoveBus, onUpdateBusName,
   onAddMtr, onRemoveMtr,
 }: SettingsDrawerProps) {
   const { t, language } = useApp();
@@ -150,6 +160,7 @@ export function SettingsDrawer({
     direction: "outbound",
     serviceType: "1",
     stopId: "",
+    stopName: "",
   });
 
   const [mtrForm, setMtrForm] = useState({ line: "TML", station: "" });
@@ -160,10 +171,11 @@ export function SettingsDrawer({
       company: busForm.company,
       route: busForm.route.trim().toUpperCase(),
       stopId: busForm.stopId,
+      stopName: busForm.stopName,
       direction: busForm.direction,
       serviceType: busForm.serviceType,
     });
-    setBusForm({ company: "KMB", route: "", direction: "outbound", serviceType: "1", stopId: "" });
+    setBusForm({ company: "KMB", route: "", direction: "outbound", serviceType: "1", stopId: "", stopName: "" });
   };
 
   const handleAddMtr = () => {
@@ -293,7 +305,7 @@ export function SettingsDrawer({
                   direction={busForm.direction}
                   serviceType={busForm.serviceType}
                   value={busForm.stopId}
-                  onChange={(stopId) => setBusForm((f) => ({ ...f, stopId }))}
+                  onChange={(stopId, stopName) => setBusForm((f) => ({ ...f, stopId, stopName }))}
                   language={language}
                 />
               </div>

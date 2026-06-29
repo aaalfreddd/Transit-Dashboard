@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useBusEta } from "@/hooks/useBusEta";
 import { BusPreset } from "@/hooks/usePresets";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -5,13 +6,15 @@ import { X, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useApp } from "@/contexts/AppContext";
 import { EtaChip } from "@/components/EtaChip";
+import { fetchStopName, cleanStopName } from "@/hooks/useBusStops";
 
 interface BusCardProps {
   preset: BusPreset;
   onRemove: (id: string) => void;
+  onUpdateName: (id: string, stopName: string) => void;
 }
 
-export function BusCard({ preset, onRemove }: BusCardProps) {
+export function BusCard({ preset, onRemove, onUpdateName }: BusCardProps) {
   const { t, language } = useApp();
   const company = preset.company ?? "KMB";
   const { data, isLoading, isError, refetch } = useBusEta(
@@ -21,6 +24,20 @@ export function BusCard({ preset, onRemove }: BusCardProps) {
     preset.direction,
     preset.serviceType
   );
+
+  // Auto-fetch and save stop name if missing
+  useEffect(() => {
+    if (preset.stopName) return; // already have it
+    let cancelled = false;
+    (async () => {
+      const info = await fetchStopName(preset.stopId, company);
+      if (!cancelled && info.name_en) {
+        const name = cleanStopName(language === "zh" ? info.name_tc : info.name_en);
+        onUpdateName(preset.id, name);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [preset.stopName, preset.stopId, preset.id, company, language, onUpdateName]);
 
   const routeDest = language === "zh"
     ? (data?.routeInfo.dest_tc || data?.routeInfo.dest_en)
@@ -53,6 +70,8 @@ export function BusCard({ preset, onRemove }: BusCardProps) {
       </div>
     );
   }
+
+  const stopLabel = preset.stopName || preset.stopId;
 
   return (
     <div
@@ -99,10 +118,10 @@ export function BusCard({ preset, onRemove }: BusCardProps) {
               {company}
             </span>
             <span
-              className="font-mono truncate"
+              className="truncate"
               style={{ color: "hsl(var(--muted-foreground))", fontSize: "11px" }}
             >
-              {preset.stopId}
+              {stopLabel}
             </span>
           </div>
         </div>
@@ -118,7 +137,7 @@ export function BusCard({ preset, onRemove }: BusCardProps) {
             className="h-7 w-7 opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity"
             onClick={() => onRemove(preset.id)} data-testid={`button-bus-remove-${preset.id}`}>
             <X className="h-3.5 w-3.5" />
-          </Button>
+            </Button>
         </div>
       </div>
 

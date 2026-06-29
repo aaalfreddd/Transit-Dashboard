@@ -8,10 +8,11 @@ import { useApp } from "@/contexts/AppContext";
 interface BusColumnProps {
   presets: BusPreset[];
   onRemove: (id: string) => void;
+  onUpdateName: (id: string, stopName: string) => void;
   onAddClick: () => void;
 }
 
-export function BusColumn({ presets, onRemove, onAddClick }: BusColumnProps) {
+export function BusColumn({ presets, onRemove, onUpdateName, onAddClick }: BusColumnProps) {
   const { t } = useApp();
 
   return (
@@ -44,7 +45,7 @@ export function BusColumn({ presets, onRemove, onAddClick }: BusColumnProps) {
       {/* Scrollable presets */}
       <div className="overflow-y-auto p-4 space-y-3" style={{ maxHeight: presets.length === 0 ? 0 : undefined }}>
         {presets.length === 0 ? null : presets.map((preset) => (
-          <BusCard key={preset.id} preset={preset} onRemove={onRemove} />
+          <BusCard key={preset.id} preset={preset} onRemove={onRemove} onUpdateName={onUpdateName} />
         ))}
       </div>
 
