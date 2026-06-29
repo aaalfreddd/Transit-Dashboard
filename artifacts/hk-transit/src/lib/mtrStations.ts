@@ -107,7 +107,7 @@ export const MTR_LINES: MtrLine[] = [
   {
     code: "ISL", name_en: "Island Line", name_zh: "港島線", color: "hsl(214 88% 51%)",
     stations: [
-      { code: "KEN", name_en: "Kennedy Town", name_zh: "堅尼地城" },
+      { code: "KET", name_en: "Kennedy Town", name_zh: "堅尼地城" },
       { code: "HKU", name_en: "HKU", name_zh: "香港大學" },
       { code: "SYP", name_en: "Sai Ying Pun", name_zh: "西營盤" },
       { code: "SHW", name_en: "Sheung Wan", name_zh: "上環" },

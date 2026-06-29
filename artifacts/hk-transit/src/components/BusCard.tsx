@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useBusEta } from "@/hooks/useBusEta";
 import { BusPreset } from "@/hooks/usePresets";
 import { Skeleton } from "@/components/ui/skeleton";
-import { X, RefreshCw } from "lucide-react";
+import { X, RefreshCw, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useApp } from "@/contexts/AppContext";
 import { EtaChip } from "@/components/EtaChip";
@@ -101,7 +101,7 @@ export function BusCard({ preset, onRemove, onUpdateName }: BusCardProps) {
         <div className="flex-1 min-w-0">
           <div
             className="font-semibold truncate"
-            style={{ color: "hsl(var(--foreground))", fontSize: "calc(var(--base-font-size) * 1.15)" }}
+            style={{ color: "hsl(var(--foreground))", fontSize: "calc(var(--base-font-size) * 1.25)" }}
             data-testid={`text-bus-dest-${preset.id}`}
           >
             ➜ {routeDest || fallbackDest}
@@ -117,11 +117,11 @@ export function BusCard({ preset, onRemove, onUpdateName }: BusCardProps) {
             >
               {company}
             </span>
-            <span
-              className="truncate"
+            <span className="flex items-center gap-1 truncate"
               style={{ color: "hsl(var(--muted-foreground))", fontSize: "11px" }}
             >
-              🚌 {stopLabel}
+              <MapPin className="h-3.5 w-3.5 shrink-0 opacity-80" />
+              {stopLabel}
             </span>
           </div>
         </div>

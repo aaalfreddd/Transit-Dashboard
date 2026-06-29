@@ -1,7 +1,7 @@
 import { useMtrSchedule, MtrTrain } from "@/hooks/useMtrSchedule";
 import { MtrPreset } from "@/hooks/usePresets";
 import { Skeleton } from "@/components/ui/skeleton";
-import { X, RefreshCw, ArrowUp, ArrowDown } from "lucide-react";
+import { X, RefreshCw, ArrowUp, ArrowDown, TrainFront } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useApp } from "@/contexts/AppContext";
 import { MTR_LINE_MAP, MTR_STATION_MAP } from "@/lib/mtrStations";
@@ -137,11 +137,13 @@ export function MtrCard({ preset, onRemove }: MtrCardProps) {
         <div className="flex items-center gap-3">
           <div className="h-3 w-3 rounded-full shrink-0" style={{ background: lineColor }} />
           <div>
-            <div className="font-semibold" style={{ color: "hsl(var(--foreground))", fontSize: "calc(var(--base-font-size) * 1.15)" }}
+            <div className="font-semibold" style={{ color: "hsl(var(--foreground))", fontSize: "calc(var(--base-font-size) * 1.25)" }}
               data-testid={`text-mtr-line-${preset.id}`}>
-              {lineName}
+              ➜ {lineName}
             </div>
-            <div style={{ color: "hsl(var(--muted-foreground))", fontSize: "calc(var(--base-font-size) * 0.8)" }}>
+            <div className="flex items-center gap-1"
+              style={{ color: "hsl(var(--muted-foreground))", fontSize: "calc(var(--base-font-size) * 0.8)" }}>
+              <TrainFront className="h-3.5 w-3.5 shrink-0 opacity-80" />
               {stationName}
             </div>
           </div>
