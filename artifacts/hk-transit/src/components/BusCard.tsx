@@ -101,10 +101,10 @@ export function BusCard({ preset, onRemove, onUpdateName }: BusCardProps) {
         <div className="flex-1 min-w-0">
           <div
             className="font-semibold truncate"
-            style={{ color: "hsl(var(--foreground))", fontSize: "var(--base-font-size)" }}
+            style={{ color: "hsl(var(--foreground))", fontSize: "calc(var(--base-font-size) * 1.15)" }}
             data-testid={`text-bus-dest-${preset.id}`}
           >
-            {routeDest || fallbackDest}
+            ➜ {routeDest || fallbackDest}
           </div>
           <div className="flex items-center gap-1.5 mt-0.5">
             <span
@@ -121,7 +121,7 @@ export function BusCard({ preset, onRemove, onUpdateName }: BusCardProps) {
               className="truncate"
               style={{ color: "hsl(var(--muted-foreground))", fontSize: "11px" }}
             >
-              {stopLabel}
+              🚌 {stopLabel}
             </span>
           </div>
         </div>

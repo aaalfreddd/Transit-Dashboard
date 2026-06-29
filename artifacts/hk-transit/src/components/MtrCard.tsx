@@ -137,7 +137,7 @@ export function MtrCard({ preset, onRemove }: MtrCardProps) {
         <div className="flex items-center gap-3">
           <div className="h-3 w-3 rounded-full shrink-0" style={{ background: lineColor }} />
           <div>
-            <div className="font-semibold" style={{ color: "hsl(var(--foreground))", fontSize: "var(--base-font-size)" }}
+            <div className="font-semibold" style={{ color: "hsl(var(--foreground))", fontSize: "calc(var(--base-font-size) * 1.15)" }}
               data-testid={`text-mtr-line-${preset.id}`}>
               {lineName}
             </div>
