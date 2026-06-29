@@ -56,25 +56,25 @@ function TrainRow({
           style={{
             background: index === 0 ? "hsl(var(--accent) / 0.2)" : "hsl(var(--secondary))",
             color: index === 0 ? "hsl(var(--accent))" : "hsl(var(--muted-foreground))",
-            fontSize: "calc(var(--base-font-size) * 0.75)",
+            fontSize: "var(--base-font-size)",
           }}
         >
           {index + 1}
         </span>
-        <span className="truncate" style={{ color: "hsl(var(--muted-foreground))", fontSize: "calc(var(--base-font-size) * 0.8)" }}>
+        <span className="truncate" style={{ color: "hsl(var(--muted-foreground))", fontSize: "var(--base-font-size)" }}>
           {destName}
         </span>
         {train.plat && (
           <span
             className="px-1 py-0.5 rounded shrink-0"
-            style={{ background: "hsl(var(--secondary))", color: "hsl(var(--muted-foreground))", fontSize: "calc(var(--base-font-size) * 0.75)" }}
+            style={{ background: "hsl(var(--secondary))", color: "hsl(var(--muted-foreground))", fontSize: "var(--base-font-size)" }}
           >
             P{train.plat}
           </span>
         )}
       </div>
       <div className="flex items-center gap-3 shrink-0">
-        <span className="font-mono" style={{ color: "hsl(var(--muted-foreground))", fontSize: "calc(var(--base-font-size) * 0.8)" }}>
+        <span className="font-mono" style={{ color: "hsl(var(--muted-foreground))", fontSize: "var(--base-font-size)" }}>
           {formatMtrTime(train.time)}
         </span>
         <span
@@ -165,7 +165,7 @@ export function MtrCard({ preset, onRemove }: MtrCardProps) {
 
       <div className="px-4 py-3">
         {isError ? (
-          <div className="text-center py-2" style={{ color: "hsl(var(--muted-foreground))", fontSize: "calc(var(--base-font-size) * 0.9)" }}
+          <div className="text-center py-2" style={{ color: "hsl(var(--muted-foreground))", fontSize: "var(--base-font-size)" }}
             data-testid={`text-mtr-error-${preset.id}`}>
             {t.apiUnavailable}
           </div>
@@ -173,12 +173,12 @@ export function MtrCard({ preset, onRemove }: MtrCardProps) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <div className="flex items-center gap-1.5 mb-2 font-medium"
-                style={{ color: "hsl(var(--muted-foreground))", fontSize: "calc(var(--base-font-size) * 0.8)" }}>
+                style={{ color: "hsl(var(--muted-foreground))", fontSize: "var(--base-font-size)" }}>
                 <ArrowUp className="h-3 w-3" />
                 {t.up}
               </div>
               {upTrains.length === 0
-                ? <div style={{ color: "hsl(var(--muted-foreground))", fontSize: "calc(var(--base-font-size) * 0.85)" }}>{t.noService}</div>
+                ? <div style={{ color: "hsl(var(--muted-foreground))", fontSize: "var(--base-font-size)" }}>{t.noService}</div>
                 : <div className="space-y-0.5">{upTrains.map((train, i) => (
                     <TrainRow key={i} train={train} index={i} due={t.due} departed={t.departed} language={language} />
                   ))}</div>
@@ -186,12 +186,12 @@ export function MtrCard({ preset, onRemove }: MtrCardProps) {
             </div>
             <div>
               <div className="flex items-center gap-1.5 mb-2 font-medium"
-                style={{ color: "hsl(var(--muted-foreground))", fontSize: "calc(var(--base-font-size) * 0.8)" }}>
+                style={{ color: "hsl(var(--muted-foreground))", fontSize: "var(--base-font-size)" }}>
                 <ArrowDown className="h-3 w-3" />
                 {t.down}
               </div>
               {downTrains.length === 0
-                ? <div style={{ color: "hsl(var(--muted-foreground))", fontSize: "calc(var(--base-font-size) * 0.85)" }}>{t.noService}</div>
+                ? <div style={{ color: "hsl(var(--muted-foreground))", fontSize: "var(--base-font-size)" }}>{t.noService}</div>
                 : <div className="space-y-0.5">{downTrains.map((train, i) => (
                     <TrainRow key={i} train={train} index={i} due={t.due} departed={t.departed} language={language} />
                   ))}</div>

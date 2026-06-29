@@ -90,7 +90,7 @@ export function BusCard({ preset, onRemove, onUpdateName }: BusCardProps) {
           style={{
             background: `${routeColor}22`,
             color: routeColor,
-            fontSize: "calc(var(--base-font-size) * 1.4)",
+            fontSize: "var(--base-font-size)",
             border: `1.5px solid ${routeColor}55`,
           }}
           data-testid={`text-bus-route-${preset.id}`}
@@ -112,7 +112,7 @@ export function BusCard({ preset, onRemove, onUpdateName }: BusCardProps) {
               style={{
                 background: `${routeColor}22`,
                 color: routeColor,
-                fontSize: "10px",
+                fontSize: "var(--base-font-size)",
               }}
             >
               {company}
@@ -144,12 +144,12 @@ export function BusCard({ preset, onRemove, onUpdateName }: BusCardProps) {
       {/* ETA body */}
       <div className="px-4 py-3 space-y-3">
         {isError ? (
-          <div style={{ color: "hsl(var(--muted-foreground))", fontSize: "calc(var(--base-font-size) * 0.85)" }}
+          <div style={{ color: "hsl(var(--muted-foreground))", fontSize: "var(--base-font-size)" }}
             data-testid={`text-bus-error-${preset.id}`}>
             {t.apiUnavailable}
           </div>
         ) : !data?.grouped?.length ? (
-          <div style={{ color: "hsl(var(--muted-foreground))", fontSize: "calc(var(--base-font-size) * 0.85)" }}
+          <div style={{ color: "hsl(var(--muted-foreground))", fontSize: "var(--base-font-size)" }}
             data-testid={`text-bus-noservice-${preset.id}`}>
             {t.noService}
           </div>
@@ -163,7 +163,7 @@ export function BusCard({ preset, onRemove, onUpdateName }: BusCardProps) {
                 {destLabel && (
                   <div
                     className="mb-1.5"
-                    style={{ color: "hsl(var(--muted-foreground))", fontSize: "11px" }}
+                    style={{ color: "hsl(var(--muted-foreground))", fontSize: "var(--base-font-size)" }}
                   >
                     → {destLabel}
                   </div>
