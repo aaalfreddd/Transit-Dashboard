@@ -137,12 +137,12 @@ export function MtrCard({ preset, onRemove }: MtrCardProps) {
         <div className="flex items-center gap-3">
           <div className="h-3 w-3 rounded-full shrink-0" style={{ background: lineColor }} />
           <div>
-            <div className="font-semibold" style={{ color: "hsl(var(--foreground))", fontSize: "calc(var(--base-font-size) * 1.25)" }}
+            <div className="font-semibold" style={{ color: "hsl(var(--foreground))", fontSize: "var(--base-font-size)" }}
               data-testid={`text-mtr-line-${preset.id}`}>
               ➜ {lineName}
             </div>
             <div className="flex items-center gap-1"
-              style={{ color: "hsl(var(--muted-foreground))", fontSize: "calc(var(--base-font-size) * 0.8)" }}>
+              style={{ color: "hsl(var(--muted-foreground))", fontSize: "var(--base-font-size)" }}>
               <TrainFront className="h-3.5 w-3.5 shrink-0 opacity-80" />
               {stationName}
             </div>

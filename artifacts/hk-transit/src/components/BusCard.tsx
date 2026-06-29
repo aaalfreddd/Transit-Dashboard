@@ -101,7 +101,7 @@ export function BusCard({ preset, onRemove, onUpdateName }: BusCardProps) {
         <div className="flex-1 min-w-0">
           <div
             className="font-semibold truncate"
-            style={{ color: "hsl(var(--foreground))", fontSize: "calc(var(--base-font-size) * 1.25)" }}
+            style={{ color: "hsl(var(--foreground))", fontSize: "var(--base-font-size)" }}
             data-testid={`text-bus-dest-${preset.id}`}
           >
             ➜ {routeDest || fallbackDest}
@@ -118,7 +118,7 @@ export function BusCard({ preset, onRemove, onUpdateName }: BusCardProps) {
               {company}
             </span>
             <span className="flex items-center gap-1 truncate"
-              style={{ color: "hsl(var(--muted-foreground))", fontSize: "11px" }}
+              style={{ color: "hsl(var(--muted-foreground))", fontSize: "var(--base-font-size)" }}
             >
               <MapPin className="h-3.5 w-3.5 shrink-0 opacity-80" />
               {stopLabel}
